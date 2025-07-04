@@ -32,6 +32,10 @@ const upload = multer({ storage: storage });
 
 // Получение списка файлов и папок
 app.get('/api/files', (req, res) => {
+    if (!req.query.path || req.query.path.includes('.')) {
+        res.json({ message: 'Неверный путь' });
+        return;
+    }
     const dirPath = path.join(ROOT_DIR, data_path + (req.query.path || '/'));
     fs.readdir(dirPath, { withFileTypes: true }, (err, files) => {
         if (err) return res.status(500).json({ error: 'Ошибка чтения директории' });
@@ -45,7 +49,7 @@ app.get('/api/files', (req, res) => {
 
 // Удаление файла или папки
 app.delete('/api/files', (req, res) => {
-    if (!req.query.path) {
+    if (!req.query.path || req.query.path.includes('.')) {
         res.json({ message: 'Неверный путь' });
         return;
     }
@@ -69,6 +73,12 @@ app.delete('/api/files', (req, res) => {
 // Создание файла или папки
 app.post('/api/files', (req, res) => {
     const { path: targetPath, type } = req.body;
+
+    if (!targetPath || targetPath.includes('.')) {
+        res.json({ message: 'Неверный путь' });
+        return;
+    }
+
     const fullPath = path.join(ROOT_DIR, data_path + targetPath);
 
     if (type === 'folder') {
@@ -94,9 +104,27 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
     res.json({ message: 'Файл успешно загружен', file: req.file.filename });
 });
 
+app.get('/api/notes', (req, res) => {
+    if (!req.query.path || req.query.path.includes('.')) {
+        res.json({ message: 'Неверный путь' });
+        return;
+    }
+
+    const filePath = path.join(ROOT_DIR, data_path + (req.query.path || '') + "notes.txt");
+    console.log(`Путь к заметкам: ${filePath}`);
+    let notes = "";
+    if (fs.existsSync(filePath)) {
+        notes = fs.readFileSync(filePath, 'utf-8');
+    }
+
+    console.log(`Получены заметки: \"${notes}\"`);
+
+    res.json({ message: notes });
+})
+
 // Скачивание файла
 app.get('/api/download', (req, res) => {
-    if (!req.query.path) {
+    if (!req.query.path || req.query.path.includes('.')) {
         res.json({ message: 'Неверный путь' });
         return;
     }

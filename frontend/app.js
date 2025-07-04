@@ -46,6 +46,8 @@ async function loadFiles(path = '/') {
         fileList.appendChild(upDiv);
     }
 
+    document.getElementById('notes').style.display = 'none';
+
     files.forEach(file => {
         const div = document.createElement('div');
         div.className = 'file';
@@ -102,6 +104,27 @@ async function loadFiles(path = '/') {
 
         fileList.appendChild(div);
     });
+
+    await getNotes(path);
+}
+
+// Получить заметки каталога
+async function getNotes(directory) {
+    const response = await fetch(`${API_URL}/notes?path=${encodeURIComponent(directory)}`, {
+        method: 'GET'
+    });
+
+    const result = await response.json();
+    if (result.error) {
+        alert(`Ошибка: ${result.error}`);
+    }
+
+    if (result.message) {
+        document.getElementById('notes').style.display = 'flex';
+        document.getElementById('notes').innerText = result.message;
+    }
+    else
+        document.getElementById('notes').style.display = 'none';
 }
 
 // Скачивание файла
