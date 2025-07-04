@@ -12,7 +12,6 @@ const ROOT_DIR = path.resolve(__dirname, '..'); // корневая директ
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Настройка папки для сохранения загруженных файлов
 const storage = multer.diskStorage({
