@@ -1,22 +1,37 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const data_path = "data";
 const cors = require('cors');
 const multer = require('multer');
+const archiver = require('archiver');
 
 const app = express();
 const PORT = 3000;
 
 const ROOT_DIR = path.resolve(__dirname, '..'); // корневая директория
 
+const DIR_PATH = path.join(ROOT_DIR, "data/");
+
 app.use(cors());
 app.use(express.json());
+
+// Проверка, что путь не выходит за ROOT_DIR
+function isPathInsideRoot(fullPath) {
+    const resolvedRoot = path.resolve(ROOT_DIR) + path.sep; // гарантируем / на конце
+    const resolvedTarget = path.resolve(fullPath);
+
+    // console.log(`Проверка путей: ${resolvedTarget} (${resolvedRoot})`);
+
+    return resolvedTarget.startsWith(resolvedRoot);
+}
 
 // Настройка папки для сохранения загруженных файлов
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const fullPath = path.join(ROOT_DIR, data_path + (req.query.destination || '/'));
+        const fullPath = path.join(DIR_PATH, req.query.destination || '/');
+
+        if (!isPathInsideRoot(fullPath))
+            return;
 
         // Создаём папку если её нет
         fs.mkdirSync(fullPath, { recursive: true });
@@ -32,11 +47,11 @@ const upload = multer({ storage: storage });
 
 // Получение списка файлов и папок
 app.get('/api/files', (req, res) => {
-    if (!req.query.path || req.query.path.includes('.')) {
-        res.json({ message: 'Неверный путь' });
+    const dirPath = path.join(DIR_PATH, req.query.path || '/');
+    if (!isPathInsideRoot(dirPath)) {
+        res.status(400).json({ error: 'Неверный путь' });
         return;
     }
-    const dirPath = path.join(ROOT_DIR, data_path + (req.query.path || '/'));
     fs.readdir(dirPath, { withFileTypes: true }, (err, files) => {
         if (err) return res.status(500).json({ error: 'Ошибка чтения директории' });
         const result = files.map(file => ({
@@ -49,11 +64,11 @@ app.get('/api/files', (req, res) => {
 
 // Удаление файла или папки
 app.delete('/api/files', (req, res) => {
-    if (!req.query.path || req.query.path.includes('.')) {
-        res.json({ message: 'Неверный путь' });
+    const targetPath = path.join(DIR_PATH, req.query.path || '');
+    if (!isPathInsideRoot(targetPath)) {
+        res.status(400).json({ error: 'Неверный путь' });
         return;
     }
-    const targetPath = path.join(ROOT_DIR, data_path + (req.query.path || ''));
     fs.stat(targetPath, (err, stats) => {
         if (err) return res.status(404).json({ error: 'Файл не найден' });
         if (stats.isDirectory()) {
@@ -74,12 +89,12 @@ app.delete('/api/files', (req, res) => {
 app.post('/api/files', (req, res) => {
     const { path: targetPath, type } = req.body;
 
-    if (!targetPath || targetPath.includes('.')) {
-        res.json({ message: 'Неверный путь' });
+    const fullPath = path.join(DIR_PATH, targetPath);
+
+    if (!isPathInsideRoot(fullPath)) {
+        res.status(400).json({ error: 'Неверный путь' });
         return;
     }
-
-    const fullPath = path.join(ROOT_DIR, data_path + targetPath);
 
     if (type === 'folder') {
         fs.mkdir(fullPath, { recursive: false }, err => {
@@ -105,37 +120,55 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 });
 
 app.get('/api/notes', (req, res) => {
-    if (!req.query.path || req.query.path.includes('.')) {
-        res.json({ message: 'Неверный путь' });
+    const filePath = path.join(DIR_PATH, (req.query.path || '') + "notes.txt");
+    if (!isPathInsideRoot(filePath)) {
+        res.status(400).json({ error: 'Неверный путь' });
         return;
     }
 
-    const filePath = path.join(ROOT_DIR, data_path + (req.query.path || '') + "notes.txt");
-    console.log(`Путь к заметкам: ${filePath}`);
     let notes = "";
     if (fs.existsSync(filePath)) {
         notes = fs.readFileSync(filePath, 'utf-8');
     }
 
-    console.log(`Получены заметки: \"${notes}\"`);
-
     res.json({ message: notes });
 })
 
-// Скачивание файла
+// Скачивание файла или папки (как zip)
 app.get('/api/download', (req, res) => {
-    if (!req.query.path || req.query.path.includes('.')) {
-        res.json({ message: 'Неверный путь' });
+    const filePath = path.join(DIR_PATH, req.query.path || '');
+    if (!isPathInsideRoot(filePath)) {
+        res.status(400).json({ error: 'Неверный путь' });
         return;
     }
-    const filePath = path.join(ROOT_DIR, data_path + (req.query.path || ''));
+
     fs.stat(filePath, (err, stats) => {
-        if (err || !stats.isFile()) {
-            return res.status(404).json({ error: 'Файл не найден или это не файл' });
+        if (err) {
+            return res.status(404).json({ error: 'Файл или папка не найдены' });
         }
-        res.download(filePath, err => {
-            if (err) res.status(500).json({ error: 'Ошибка скачивания файла' });
-        });
+
+        if (stats.isFile()) {
+            // Скачиваем файл
+            res.download(filePath, err => {
+                if (err) res.status(500).json({ error: 'Ошибка скачивания файла' });
+            });
+        } else if (stats.isDirectory()) {
+            // Скачиваем папку как zip
+            const folderName = path.basename(filePath);
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename=${folderName}.zip`);
+
+            const archive = archiver('zip', { zlib: { level: 9 } });
+            archive.directory(filePath, false);
+            archive.pipe(res);
+
+            archive.finalize().catch(err => {
+                console.error(err);
+                res.status(500).json({ error: 'Ошибка архивации' });
+            });
+        } else {
+            res.status(400).json({ error: 'Недопустимый тип' });
+        }
     });
 });
 

@@ -26,11 +26,22 @@
         <button id="upload-btn" onclick="uploadFile()">📤 Загрузить файл</button>
     </div>
 
+    <!-- Прогресс загрузки -->
+    <div id="upload-progress" class="upload-progress" style="display:none;">
+        <div id="progress-bar" class="progress-bar"></div>
+        <div id="progress-text" class="progress-text">0%</div>
+    </div>
+
     <!-- Заметки каталога -->
     <div id="notes" class="notes"></div>
 
     <!-- Список файлов -->
     <div id="file-list"></div>
+
+    <!-- Зона для Drag & Drop -->
+    <div id="drop-zone" class="drop-zone">
+        🖱️ Перетащи файлы сюда для загрузки
+    </div>
 
     <script src="app.js"></script>
 </body>

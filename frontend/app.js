@@ -5,6 +5,7 @@ const FILE_ICON = '📄';
 const IMAGE_ICON = '🖼️';
 const AUDIO_ICON = '💽';
 const VIDEO_ICON = '📼';
+const ARCHIVE_ICON = '📦';
 
 let currentPath = '/';
 
@@ -65,7 +66,10 @@ async function loadFiles(path = '/') {
                 div.textContent = `${VIDEO_ICON} ${file.name}`;
             } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) {
                 div.textContent = `${IMAGE_ICON} ${file.name}`;
-            } else {
+            } else if (['zip', 'ico', 'rar', '7z', 'tar'].includes(ext)) {
+                div.textContent = `${ARCHIVE_ICON} ${file.name}`;
+            }
+            else {
                 div.textContent = `${FILE_ICON} ${file.name}`;
             }
 
@@ -81,10 +85,14 @@ async function loadFiles(path = '/') {
                 const newPath = normalizePath(`${currentPath}${file.name}`);
                 loadFiles(newPath);
             };
-        }
-
-        // Кнопка скачивания только для файлов
-        if (!file.isDirectory) {
+            const downloadZipBtn = document.createElement('button');
+            downloadZipBtn.textContent = '📦 Скачать ZIP';
+            downloadZipBtn.onclick = (e) => {
+                e.stopPropagation();
+                downloadFile(`${currentPath}${file.name}`);
+            };
+            actions.appendChild(downloadZipBtn);
+        } else {
             const downloadBtn = document.createElement('button');
             downloadBtn.textContent = '⬇️ Скачать';
             downloadBtn.onclick = (e) => {
@@ -154,7 +162,7 @@ async function deleteFile(filePath) {
             alert(`Ошибка: ${result.error}`);
         }
 
-        refreshCurrent(); // обновляем список
+        refreshCurrentFolder(); // обновляем список
     }
 }
 
@@ -173,7 +181,7 @@ async function createFolder() {
             alert(`Ошибка: ${result.error}`);
         }
 
-        refreshCurrent();
+        refreshCurrentFolder();
     }
 }
 
@@ -192,7 +200,7 @@ async function createFile() {
             alert(`Ошибка: ${result.error}`);
         }
 
-        refreshCurrent();
+        refreshCurrentFolder();
     }
 }
 
@@ -201,22 +209,55 @@ async function uploadFile(file, destination) {
     if (!file || !destination) return;
 
     const fileData = new FormData();
-    fileData.append('file', file); // сам файл
+    fileData.append('file', file);
 
-    const response = await fetch(`${API_URL}/upload?destination=${destination}`, {
-        method: 'POST',
-        body: fileData
+    // Показать прогресс
+    const progressContainer = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressText.textContent = `0% (${file.name})`;
+
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_URL}/upload?destination=${destination}`);
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percent + '%';
+                progressText.textContent = `${percent}% (${file.name})`;
+            }
+        });
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                progressBar.style.width = '100%';
+                progressText.textContent = `✅ Загружено: ${file.name}`;
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 800);
+                resolve();
+            } else {
+                alert(`Ошибка при загрузке ${file.name}: ${xhr.responseText}`);
+                progressContainer.style.display = 'none';
+                reject();
+            }
+        };
+
+        xhr.onerror = () => {
+            alert(`Ошибка сети при загрузке ${file.name}`);
+            progressContainer.style.display = 'none';
+            reject();
+        };
+
+        xhr.send(fileData);
     });
-
-    const result = await response.json();
-    if (result.error) {
-        alert(`Ошибка: ${result.error}`);
-    }
-    refreshCurrent();
 }
 
 // Обновить текущий каталог
-function refreshCurrent() {
+function refreshCurrentFolder() {
     loadFiles(currentPath);
 }
 
@@ -248,7 +289,36 @@ document.getElementById('upload-input').addEventListener('change', async () => {
 
     input.value = ''; // сбросить выбор файла
 
-    alert('Файл(ы) отправлены');
+    refreshCurrentFolder();
+});
+
+const dropZone = document.getElementById('drop-zone');
+
+// Предотвращаем дефолтное поведение браузера
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => e.preventDefault());
+    dropZone.addEventListener(eventName, (e) => e.stopPropagation());
+});
+
+// Подсвечиваем зону при наведении
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'));
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'));
+});
+
+// Обработка drop файлов
+dropZone.addEventListener('drop', async (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length === 0) return;
+
+    for (let file of files) {
+        await uploadFile(file, currentPath);
+    }
+
+    refreshCurrentFolder();
 });
 
 // Загрузка файлов при старте
