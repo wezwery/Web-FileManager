@@ -1,4 +1,5 @@
 const API_URL = `${location.protocol}//${location.hostname}:3000/api`;
+const USED_FILES = ['notes.txt'];
 const FOLDER_ICON = '📁';
 const FILE_ICON = '📄';
 const IMAGE_ICON = '🖼️';
@@ -67,6 +68,9 @@ async function loadFiles(path = '/') {
             } else {
                 div.textContent = `${FILE_ICON} ${file.name}`;
             }
+
+            if (USED_FILES.includes(file.name))
+                div.style.opacity = '50%';
         }
 
         const actions = document.createElement('div');
