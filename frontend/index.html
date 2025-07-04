@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Manager</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <h1>📂 File Manager</h1>
+
+    <!-- Панель навигации -->
+    <div id="nav">
+        <input type="text" id="path-input" placeholder="Введите путь" />
+        <button onclick="goToPath()">➡️ Перейти</button>
+        <button onclick="refreshCurrent()">🔄 Обновить</button>
+    </div>
+
+    <!-- Кнопки создания -->
+    <div>
+        <button onclick="createFolder()">📁 Создать папку</button>
+        <button onclick="createFile()">📄 Создать файл</button>
+        <input type="file" id="upload-input" style="display:none" />
+        <button id="upload-btn" onclick="uploadFile()">📤 Загрузить</button>
+    </div>
+
+    <!-- Список файлов -->
+    <div id="file-list"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
