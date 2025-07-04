@@ -50,6 +50,12 @@ async function loadFiles(path = '/') {
 
     document.getElementById('notes').style.display = 'none';
 
+    files.sort((a, b) => {
+        if (a.isDirectory && !b.isDirectory) return -1;
+        if (!a.isDirectory && b.isDirectory) return 1;
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
     files.forEach(file => {
         const div = document.createElement('div');
         div.className = 'file';
