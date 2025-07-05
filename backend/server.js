@@ -2,8 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const multer = require('multer');
 const archiver = require('archiver');
+const busboy = require('busboy');
 
 const app = express();
 const PORT = 3000;
@@ -15,39 +15,22 @@ const DIR_PATH = path.join(ROOT_DIR, "data/");
 app.use(cors());
 app.use(express.json());
 
-// Проверка, что путь не выходит за ROOT_DIR
+// Проверка, что путь не выходит за DIR_PATH
 function isPathInsideRoot(fullPath) {
-    const resolvedRoot = path.resolve(ROOT_DIR) + path.sep; // гарантируем / на конце
-    const resolvedTarget = path.resolve(fullPath);
+    const resolvedRoot = path.resolve(DIR_PATH) + path.sep; // гарантируем / на конце
+    const resolvedTarget = path.resolve(fullPath) + path.sep;
 
-    // console.log(`Проверка путей: ${resolvedTarget} (${resolvedRoot})`);
+    const accept = resolvedTarget.startsWith(resolvedRoot);
 
-    return resolvedTarget.startsWith(resolvedRoot);
+    console.log(`[Защита каталога] [${accept}] Проверка пути: ${resolvedTarget} в ${resolvedRoot}`);
+
+    return accept;
 }
-
-// Настройка папки для сохранения загруженных файлов
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const fullPath = path.join(DIR_PATH, req.query.destination || '/');
-
-        if (!isPathInsideRoot(fullPath))
-            return;
-
-        // Создаём папку если её нет
-        fs.mkdirSync(fullPath, { recursive: true });
-
-        cb(null, fullPath); // сюда multer будет сохранять файл
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname); // имя файла как у оригинала
-    }
-});
-
-const upload = multer({ storage: storage });
 
 // Получение списка файлов и папок
 app.get('/api/files', (req, res) => {
     const dirPath = path.join(DIR_PATH, req.query.path || '/');
+    console.log(`[Чтение каталога] Попытка получить файлы: ${req.query.path || '/'}`);
     if (!isPathInsideRoot(dirPath)) {
         res.status(400).json({ error: 'Неверный путь' });
         return;
@@ -65,6 +48,7 @@ app.get('/api/files', (req, res) => {
 // Удаление файла или папки
 app.delete('/api/files', (req, res) => {
     const targetPath = path.join(DIR_PATH, req.query.path || '');
+    console.log(`[Удаление файла/каталога] Попытка удалить файл/каталог: ${req.query.path || ''}`);
     if (!isPathInsideRoot(targetPath)) {
         res.status(400).json({ error: 'Неверный путь' });
         return;
@@ -91,6 +75,8 @@ app.post('/api/files', (req, res) => {
 
     const fullPath = path.join(DIR_PATH, targetPath);
 
+    console.log(`[Создание файла/каталога] Попытка создать файл/каталог: ${targetPath}`);
+
     if (!isPathInsideRoot(fullPath)) {
         res.status(400).json({ error: 'Неверный путь' });
         return;
@@ -112,15 +98,54 @@ app.post('/api/files', (req, res) => {
 });
 
 // Отправка файла
-app.post('/api/upload', upload.single('file'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'Файл не был загружен' });
-    }
-    res.json({ message: 'Файл успешно загружен', file: req.file.filename });
+app.post('/api/upload', (req, res) => {
+    const bb = busboy({ headers: req.headers, limits: { fileSize: 5 * 1024 * 1024 * 1024 } }); // 5GB
+
+    bb.on('file', (name, file, info) => {
+        const { filename } = info;
+        const saveTo = path.join(DIR_PATH, req.query.destination || '/', filename);
+
+        console.log(`[Получение файла] Попытка сохранить файл: ${req.query.destination || '/'}`);
+
+        if (!isPathInsideRoot(saveTo)) {
+            return res.status(400).json({ error: 'Неверный путь' });
+        }
+
+        fs.mkdirSync(path.dirname(saveTo), { recursive: true });
+        const writeStream = fs.createWriteStream(saveTo);
+
+        file.pipe(writeStream);
+
+        file.on('data', (data) => {
+            // Можем логировать прогресс (для WebSocket прогресс бара)
+            console.log(`[Загрузка файла на сервер] [${filename}] Получено ${data.length} байт`);
+        });
+
+        file.on('end', () => {
+            console.log(`[Загрузка файла на сервер] ✅ Файл ${filename} загружен`);
+        });
+
+        writeStream.on('close', () => {
+            res.status(200).json({ message: 'Файл успешно загружен', file: filename });
+        });
+
+        writeStream.on('error', (err) => {
+            console.error('Ошибка записи файла:', err);
+            res.status(500).json({ error: 'Ошибка загрузки файла' });
+        });
+    });
+
+    bb.on('error', (err) => {
+        console.error('Ошибка загрузки:', err);
+        res.status(500).json({ error: 'Ошибка загрузки файла' });
+    });
+
+    req.pipe(bb);
 });
 
 app.get('/api/notes', (req, res) => {
     const filePath = path.join(DIR_PATH, (req.query.path || '') + "notes.txt");
+    console.log(`[Получение заметок каталога] Попытка получить заметки: ${(req.query.path || '') + "notes.txt"}`);
     if (!isPathInsideRoot(filePath)) {
         res.status(400).json({ error: 'Неверный путь' });
         return;
@@ -137,6 +162,7 @@ app.get('/api/notes', (req, res) => {
 // Скачивание файла или папки (как zip)
 app.get('/api/download', (req, res) => {
     const filePath = path.join(DIR_PATH, req.query.path || '');
+    console.log(`[Скачивание файла] Попытка скачать файл: ${req.query.path || ''}`);
     if (!isPathInsideRoot(filePath)) {
         res.status(400).json({ error: 'Неверный путь' });
         return;
