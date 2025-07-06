@@ -9,6 +9,7 @@ const ARCHIVE_ICON = '📦';
 
 let currentPath = '/';
 
+// Форматы файлов
 function isImage(ext) {
     return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
 }
@@ -24,6 +25,7 @@ function isText(ext) {
 function isArchive(ext) {
     return ['zip', 'ico', 'rar', '7z', 'tar'].includes(ext);
 }
+//
 
 function normalizePath(path) {
     if (!path) return '/';
@@ -43,6 +45,7 @@ function getParentPath(path) {
     return parent;
 }
 
+// Просмотрщики
 function showImageViewer(fileName, src) {
     hideViewers();
     document.getElementById('image-viewer').style.display = 'block';
@@ -66,6 +69,7 @@ function hideViewers() {
     document.getElementById('image-viewer').style.display = 'none';
     document.getElementById('text-viewer').style.display = 'none';
 }
+//
 
 // Загрузка каталога
 async function loadFiles(path = '/') {
@@ -138,28 +142,24 @@ async function loadFiles(path = '/') {
 
         const actions = document.createElement('div');
 
+        const downloadBtn = document.createElement('button');
+
         // Переход внутрь папки
         if (file.isDirectory) {
             div.onclick = () => {
                 const newPath = normalizePath(`${currentPath}${file.name}`);
                 loadFiles(newPath);
             };
-            const downloadZipBtn = document.createElement('button');
-            downloadZipBtn.textContent = '📦 Скачать ZIP';
-            downloadZipBtn.onclick = (e) => {
-                e.stopPropagation();
-                downloadFile(`${currentPath}${file.name}`);
-            };
-            actions.appendChild(downloadZipBtn);
+            downloadBtn.textContent = '📦 Скачать ZIP';
         } else {
-            const downloadBtn = document.createElement('button');
             downloadBtn.textContent = '⬇️ Скачать';
-            downloadBtn.onclick = (e) => {
-                e.stopPropagation();
-                downloadFile(`${currentPath}${file.name}`);
-            };
-            actions.appendChild(downloadBtn);
         }
+
+        downloadBtn.onclick = (e) => {
+            e.stopPropagation();
+            downloadFile(`${currentPath}${file.name}`);
+        };
+        actions.appendChild(downloadBtn);
 
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = '🗑️ Удалить';
