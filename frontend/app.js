@@ -9,6 +9,22 @@ const ARCHIVE_ICON = '📦';
 
 let currentPath = '/';
 
+function isImage(ext) {
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
+}
+function isAudio(ext) {
+    return ['mp3', 'wav', 'ogg'].includes(ext);
+}
+function isVideo(ext) {
+    return ['mp4', 'avi', 'mkv', 'mov'].includes(ext);
+}
+function isText(ext) {
+    return ['txt', 'json'].includes(ext);
+}
+function isArchive(ext) {
+    return ['zip', 'ico', 'rar', '7z', 'tar'].includes(ext);
+}
+
 function normalizePath(path) {
     if (!path) return '/';
     let normalized = path.replace(/\/+/g, '/'); // заменяем // на /
@@ -25,6 +41,30 @@ function getParentPath(path) {
     parts.pop(); // убираем последний сегмент
     const parent = '/' + parts.join('/') + (parts.length ? '/' : '');
     return parent;
+}
+
+function showImageViewer(fileName, src) {
+    hideViewers();
+    document.getElementById('image-viewer').style.display = 'block';
+    document.getElementById('viewer-file-name').innerText = fileName;
+    document.getElementById('image-viewer-img').src = src;
+}
+
+function showTextViewer(fileName, src) {
+    hideViewers();
+    document.getElementById('text-viewer').style.display = 'block';
+    document.getElementById('viewer-file-name').innerText = fileName;
+    fetch(src)
+        .then(res => res.text())
+        .then(text => {
+            document.getElementById('text-viewer-txt').textContent = text;
+        });
+}
+
+function hideViewers() {
+    document.getElementById('viewer-file-name').innerText = "";
+    document.getElementById('image-viewer').style.display = 'none';
+    document.getElementById('text-viewer').style.display = 'none';
 }
 
 // Загрузка каталога
@@ -50,6 +90,8 @@ async function loadFiles(path = '/') {
 
     document.getElementById('notes').style.display = 'none';
 
+    hideViewers();
+
     files.sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
@@ -66,17 +108,28 @@ async function loadFiles(path = '/') {
         else {
             const ext = file.name.split('.').pop().toLowerCase();
 
-            if (['mp3', 'wav', 'ogg'].includes(ext)) {
+            if (isAudio(ext)) {
                 div.textContent = `${AUDIO_ICON} ${file.name}`;
-            } else if (['mp4', 'avi', 'mkv', 'mov'].includes(ext)) {
+            } else if (isVideo(ext)) {
                 div.textContent = `${VIDEO_ICON} ${file.name}`;
-            } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) {
+            } else if (isImage(ext)) {
                 div.textContent = `${IMAGE_ICON} ${file.name}`;
-            } else if (['zip', 'ico', 'rar', '7z', 'tar'].includes(ext)) {
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    showImageViewer(file.name, `${API_URL}/download?path=${encodeURIComponent(currentPath + file.name)}`);
+                };
+            } else if (isArchive(ext)) {
                 div.textContent = `${ARCHIVE_ICON} ${file.name}`;
             }
             else {
                 div.textContent = `${FILE_ICON} ${file.name}`;
+
+                if (isText(ext)) {
+                    div.onclick = (e) => {
+                        e.stopPropagation();
+                        showTextViewer(file.name, `${API_URL}/download?path=${encodeURIComponent(currentPath + file.name)}`);
+                    };
+                }
             }
 
             if (USED_FILES.includes(file.name))
