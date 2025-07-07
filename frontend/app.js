@@ -20,7 +20,7 @@ function isVideo(ext) {
     return ['mp4', 'avi', 'mkv', 'mov'].includes(ext);
 }
 function isText(ext) {
-    return ['txt', 'json'].includes(ext);
+    return ['txt', 'json', 'md'].includes(ext);
 }
 function isArchive(ext) {
     return ['zip', 'ico', 'rar', '7z', 'tar'].includes(ext);
