@@ -9,7 +9,7 @@ API_PORT=3000
 FRONTEND_PORT=8080
 
 # 🛠️ Установка модулей
-npm install archiver
+npm install archiver express fs path cors busboy
 
 # 🟢 Запуск backend
 echo "🚀 Запускаем Backend на http://localhost:$API_PORT"
