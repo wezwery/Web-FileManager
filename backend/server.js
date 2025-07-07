@@ -12,6 +12,9 @@ const ROOT_DIR = path.resolve(__dirname, '..'); // корневая директ
 
 const DIR_PATH = path.join(ROOT_DIR, "data/");
 
+if (!fs.existsSync(DIR_PATH))
+    fs.mkdirSync(DIR_PATH);
+
 app.use(cors());
 app.use(express.json());
 

@@ -19,13 +19,13 @@ BACKEND_PID=$!
 # 🟢 Запуск фронтенда
 echo "🌐 Хостим Frontend на http://localhost:$FRONTEND_PORT"
 cd "$FRONTEND_DIR"
-python3 -m http.server "$FRONTEND_PORT" --bind 0.0.0.0 &
+python -m http.server "$FRONTEND_PORT" --bind 0.0.0.0 &
 FRONTEND_PID=$!
 
 # 💤 Ожидание завершения процессов
 echo "✅ File Manager запущен."
 # Получаем локальный IP-адрес Wi-Fi интерфейса (например, для Linux: wlan0)
-WIFI_IP=$(hostname -I | awk '{print $1}')
+WIFI_IP=localhost
 echo "🔗 API: http://$WIFI_IP:$API_PORT"
 echo "🔗 UI:  http://$WIFI_IP:$FRONTEND_PORT"
 
