@@ -96,6 +96,8 @@ async function loadFiles(path = '/') {
 
     hideViewers();
 
+    await getNotes(path);
+
     files.sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
@@ -186,8 +188,6 @@ async function loadFiles(path = '/') {
 
         fileList.appendChild(div);
     });
-
-    await getNotes(path);
 }
 
 // Получить заметки каталога
