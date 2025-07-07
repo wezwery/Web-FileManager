@@ -48,6 +48,7 @@ function getParentPath(path) {
 // Просмотрщики
 function showImageViewer(fileName, src) {
     hideViewers();
+    document.getElementById('viewers').style.display = 'block';
     document.getElementById('image-viewer').style.display = 'block';
     document.getElementById('viewer-file-name').innerText = fileName;
     document.getElementById('image-viewer-img').src = src;
@@ -55,6 +56,7 @@ function showImageViewer(fileName, src) {
 
 function showTextViewer(fileName, src) {
     hideViewers();
+    document.getElementById('viewers').style.display = 'block';
     document.getElementById('text-viewer').style.display = 'block';
     document.getElementById('viewer-file-name').innerText = fileName;
     fetch(src)
@@ -65,7 +67,8 @@ function showTextViewer(fileName, src) {
 }
 
 function hideViewers() {
-    document.getElementById('viewer-file-name').innerText = "";
+    document.getElementById('viewers').style.display = 'none';
+    document.getElementById('viewer-file-name').innerText = '';
     document.getElementById('image-viewer').style.display = 'none';
     document.getElementById('text-viewer').style.display = 'none';
 }
