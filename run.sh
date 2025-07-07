@@ -8,6 +8,9 @@ FRONTEND_DIR="./frontend"
 API_PORT=3000
 FRONTEND_PORT=8080
 
+# 🛠️ Установка модулей
+npm install archiver
+
 # 🟢 Запуск backend
 echo "🚀 Запускаем Backend на http://localhost:$API_PORT"
 node "$BACKEND_DIR/server.js" &
