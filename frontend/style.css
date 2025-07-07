@@ -27,12 +27,20 @@ h1 {
     background-color: hsl(0, 70%, 60%);
 }
 
+.file button.rename {
+    background-color: hsl(133, 70%, 60%);
+}
+
 .file button:hover {
     background-color: hsl(216, 70%, 70%);
 }
 
 .file button.delete:hover {
     background-color: hsl(0, 70%, 70%);
+}
+
+.file button.rename:hover {
+    background-color: hsl(133, 70%, 70%);
 }
 
 #nav {

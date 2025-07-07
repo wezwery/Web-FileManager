@@ -142,6 +142,17 @@ async function loadFiles(path = '/') {
 
         const actions = document.createElement('div');
 
+        const renameBtn = document.createElement('button');
+
+        renameBtn.textContent = '✏️ Переименовать';
+        renameBtn.classList.add('rename');
+        renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameFile(file.name, `${path}${file.name}`);
+        };
+
+        actions.appendChild(renameBtn);
+
         const downloadBtn = document.createElement('button');
 
         // Переход внутрь папки
@@ -225,9 +236,28 @@ async function deleteFile(filePath) {
     }
 }
 
+// Переименование каталога
+async function renameFile(oldName, filePath) {
+    const newName = prompt('Введите новое название:', oldName);
+    if (newName) {
+        const response = await fetch(`${API_URL}/rename`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: filePath, name: newName })
+        });
+
+        const result = await response.json();
+        if (result.error) {
+            alert(`Ошибка: ${result.error}`);
+        }
+
+        refreshCurrentFolder();
+    }
+}
+
 // Создание каталога
 async function createFolder() {
-    const folderName = prompt('Введите имя новой папки:');
+    const folderName = prompt('Введите название новой папки:');
     if (folderName) {
         const response = await fetch(`${API_URL}/files`, {
             method: 'POST',
@@ -246,7 +276,7 @@ async function createFolder() {
 
 // Создание файла
 async function createFile() {
-    const fileName = prompt('Введите имя нового файла:');
+    const fileName = prompt('Введите название нового файла:');
     if (fileName) {
         const response = await fetch(`${API_URL}/files`, {
             method: 'POST',
