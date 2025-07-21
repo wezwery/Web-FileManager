@@ -13,7 +13,7 @@ h1 {
     margin-top: 20px;
 }
 
-.file button {
+.file-item button {
     background-color: hsl(216, 70%, 60%);
     color: white;
     border: none;
@@ -21,26 +21,27 @@ h1 {
     cursor: pointer;
     margin-left: 5px;
     border-radius: 2.5px;
+    transition: 0.1s;
 }
 
-.file button.delete {
+.file-item button.delete {
     background-color: hsl(0, 70%, 60%);
 }
 
-.file button.rename {
-    background-color: hsl(160, 70%, 50%);
+.file-item button.rename {
+    background-color: hsl(160, 70%, 40%);
 }
 
-.file button:hover {
-    background-color: hsl(216, 70%, 70%);
+.file-item button:hover {
+    background-color: hsl(216, 70%, 65%);
 }
 
-.file button.delete:hover {
-    background-color: hsl(0, 70%, 70%);
+.file-item button.delete:hover {
+    background-color: hsl(0, 70%, 65%);
 }
 
-.file button.rename:hover {
-    background-color: hsl(160, 70%, 60%);
+.file-item button.rename:hover {
+    background-color: hsl(160, 70%, 45%);
 }
 
 #nav {
@@ -63,7 +64,7 @@ h1 {
     text-align: center;
 }
 
-.file {
+.file-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -72,9 +73,34 @@ h1 {
     margin-bottom: 5px;
     border-radius: 4px;
     cursor: pointer;
+    transition: 0.1s;
 }
 
-.file:hover {
+.file-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-info {
+    display: block;
+    align-items: right;
+    padding-right: 25px;
+}
+
+.file-size {
+    color: #666;
+    font-size: small;
+    text-align: right;
+}
+
+.file-date {
+    color: #999;
+    font-size: small;
+    text-align: right;
+}
+
+.file-item:hover {
     background-color: #f5f5f5;
 }
 

@@ -7,6 +7,8 @@ const AUDIO_ICON = '💽';
 const VIDEO_ICON = '📼';
 const ARCHIVE_ICON = '📦';
 
+const DROP_ZONE = document.getElementById('drop-zone');
+
 let currentPath = '/';
 
 // Форматы файлов
@@ -45,12 +47,65 @@ function getParentPath(path) {
     return parent;
 }
 
+function getSizeString(size) {
+    if (size < 1024) return `${size} Б`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} КБ`;
+    if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} МБ`;
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} ГБ`;
+}
+
+function getFileExtension(fileName) {
+    const parts = fileName.split('.');
+    return parts.length > 1 ? parts.pop().toLowerCase() : '';
+}
+
+function getNameString(file) {
+    var name = file.name;
+
+    if (name.length > 40) {
+        name = name.slice(0, 40) + '...' + getFileExtension(file.name);
+    }
+
+    if (file.isDirectory) {
+        return `${FOLDER_ICON} ${name}`;
+    }
+
+    const ext = getFileExtension(name);
+    if (isImage(ext)) {
+        return `${IMAGE_ICON} ${name}`;
+    } else if (isAudio(ext)) {
+        return `${AUDIO_ICON} ${name}`;
+    } else if (isVideo(ext)) {
+        return `${VIDEO_ICON} ${name}`;
+    } else if (isArchive(ext)) {
+        return `${ARCHIVE_ICON} ${name}`;
+    }
+
+    return `${FILE_ICON} ${name}`;
+}
+
+function createTemplate(templateId) {
+    const template = document.getElementById(templateId);
+    if (!template) {
+        console.error(`Template with id ${templateId} not found`);
+        return null;
+    }
+    return template.content.cloneNode(true);
+}
+
 // Просмотрщики
+function scrollToViewers() {
+    document.getElementById('viewers').scrollIntoView({ behavior: 'smooth' });
+}
+
 function showImageViewer(fileName, src) {
     hideViewers();
     document.getElementById('viewers').style.display = 'block';
     document.getElementById('image-viewer').style.display = 'block';
     document.getElementById('viewer-file-name').innerText = fileName;
+    document.getElementById('image-viewer-img').onload = () => {
+        scrollToViewers();
+    };
     document.getElementById('image-viewer-img').src = src;
 }
 
@@ -63,6 +118,7 @@ function showTextViewer(fileName, src) {
         .then(res => res.text())
         .then(text => {
             document.getElementById('text-viewer-txt').textContent = text;
+            scrollToViewers();
         });
 }
 
@@ -85,67 +141,73 @@ async function loadFiles(path = '/') {
 
     // Кнопка "Назад" если мы не в корне
     if (currentPath !== '/') {
-        const upDiv = document.createElement('div');
-        upDiv.className = 'file';
-        upDiv.textContent = '⬆️ ..';
-        upDiv.onclick = () => {
+        const fragment = createTemplate('file-template');
+        const fileItem = fragment.querySelector('.file-item');
+        const name = fileItem.querySelector('.file-name');
+        const info = fileItem.querySelector('.file-info');
+
+        name.textContent = '⬆️ ..';
+        info.style.display = "none";
+
+        fileItem.onclick = () => {
             const parentPath = getParentPath(currentPath);
             loadFiles(parentPath);
         };
-        fileList.appendChild(upDiv);
+
+        fileList.appendChild(fragment);
     }
 
     document.getElementById('notes').style.display = 'none';
 
     hideViewers();
 
+    DROP_ZONE.style.display = "none";
+
     await getNotes(path);
 
     files.sort((a, b) => {
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
-        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+        return getFileExtension(a.name).localeCompare(getFileExtension(b.name), undefined, { numeric: true, sensitivity: 'base' });
     });
 
     files.forEach(file => {
-        const div = document.createElement('div');
-        div.className = 'file';
+        const fragment = createTemplate('file-template');
+        const fileItem = fragment.querySelector('.file-item');
+        const name = fileItem.querySelector('.file-name');
+        const actions = fileItem.querySelector('.file-actions');
+        const infoSize = fileItem.querySelector('.file-size');
+        const infoModified = fileItem.querySelector('.file-date');
 
-        if (file.isDirectory) {
-            div.textContent = `${FOLDER_ICON} ${file.name}`;
-        }
-        else {
-            const ext = file.name.split('.').pop().toLowerCase();
+        name.textContent = getNameString(file);
 
-            if (isAudio(ext)) {
-                div.textContent = `${AUDIO_ICON} ${file.name}`;
-            } else if (isVideo(ext)) {
-                div.textContent = `${VIDEO_ICON} ${file.name}`;
-            } else if (isImage(ext)) {
-                div.textContent = `${IMAGE_ICON} ${file.name}`;
-                div.onclick = (e) => {
+        if (!file.isDirectory) {
+            const ext = getFileExtension(file.name);
+            if (isImage(ext)) {
+                console.log(`Добавление обработчика для изображения: ${file.name}`);
+                fileItem.onclick = (e) => {
+                    console.log(`Открытие изображения: ${file.name}`);
                     e.stopPropagation();
                     showImageViewer(file.name, `${API_URL}/download?path=${encodeURIComponent(currentPath + file.name)}`);
                 };
-            } else if (isArchive(ext)) {
-                div.textContent = `${ARCHIVE_ICON} ${file.name}`;
-            }
-            else {
-                div.textContent = `${FILE_ICON} ${file.name}`;
-
-                if (isText(ext)) {
-                    div.onclick = (e) => {
-                        e.stopPropagation();
-                        showTextViewer(file.name, `${API_URL}/download?path=${encodeURIComponent(currentPath + file.name)}`);
-                    };
-                }
+            } else if (isText(ext)) {
+                console.log(`Добавление обработчика для текста: ${file.name}`);
+                fileItem.onclick = (e) => {
+                    console.log(`Открытие текста: ${file.name}`);
+                    e.stopPropagation();
+                    showTextViewer(file.name, `${API_URL}/download?path=${encodeURIComponent(currentPath + file.name)}`);
+                };
             }
 
             if (USED_FILES.includes(file.name))
-                div.style.opacity = '50%';
+                fileItem.style.opacity = '50%';
         }
-
-        const actions = document.createElement('div');
+        else {
+            fileItem.onclick = () => {
+                const newPath = normalizePath(`${currentPath}${file.name}`);
+                loadFiles(newPath);
+            };
+        }
 
         const renameBtn = document.createElement('button');
 
@@ -160,12 +222,7 @@ async function loadFiles(path = '/') {
 
         const downloadBtn = document.createElement('button');
 
-        // Переход внутрь папки
         if (file.isDirectory) {
-            div.onclick = () => {
-                const newPath = normalizePath(`${currentPath}${file.name}`);
-                loadFiles(newPath);
-            };
             downloadBtn.textContent = '📦 Скачать ZIP';
         } else {
             downloadBtn.textContent = '⬇️ Скачать';
@@ -187,10 +244,15 @@ async function loadFiles(path = '/') {
 
         actions.appendChild(deleteBtn);
 
-        div.appendChild(actions);
+        if (!file.isDirectory) {
+            infoSize.textContent = getSizeString(file.size);
+        }
+        infoModified.textContent = new Date(file.modified).toLocaleString();
 
-        fileList.appendChild(div);
+        fileList.appendChild(fragment);
     });
+
+    DROP_ZONE.style.display = "block";
 }
 
 // Получить заметки каталога

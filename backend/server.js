@@ -10,7 +10,7 @@ const PORT = 3000;
 
 const ROOT_DIR = path.resolve(__dirname, '..'); // корневая директория
 
-const DIR_PATH = path.join(ROOT_DIR, "data/");
+const DIR_PATH = path.join(ROOT_DIR, "data/"); // ../../
 
 if (!fs.existsSync(DIR_PATH))
     fs.mkdirSync(DIR_PATH);
@@ -41,7 +41,9 @@ app.get('/api/files', (req, res) => {
         if (err) return res.status(500).json({ error: 'Ошибка чтения директории' });
         const result = files.map(file => ({
             name: file.name,
-            isDirectory: file.isDirectory()
+            isDirectory: file.isDirectory(),
+            size: fs.statSync(path.join(dirPath, file.name)).size,
+            modified: fs.statSync(path.join(dirPath, file.name)).mtime
         }));
         res.json(result);
         console.log(`Файлы получены: ${req.query.path || '/'}`);
