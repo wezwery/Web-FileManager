@@ -10,7 +10,7 @@ const PORT = 3000;
 
 const ROOT_DIR = path.resolve(__dirname, '..'); // корневая директория
 
-const DIR_PATH = path.join(ROOT_DIR, "data/"); // ../../
+const DIR_PATH = path.join(ROOT_DIR, "data/");
 
 if (!fs.existsSync(DIR_PATH))
     fs.mkdirSync(DIR_PATH);
