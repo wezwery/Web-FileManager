@@ -1,7 +1,7 @@
 const API_URL = `${location.protocol}//${location.hostname}:3000/api`;
 const USED_FILES = ['notes.txt'];
 const FOLDER_ICON_NAME = 'folder';
-const FILE_ICON = 'file';
+const FILE_ICON_NAME = 'file';
 const IMAGE_ICON_NAME = 'image';
 const AUDIO_ICON_NAME = 'audio';
 const VIDEO_ICON_NAME = 'video';
@@ -78,7 +78,7 @@ function getIcon(file) {
             fileName = ARCHIVE_ICON_NAME;
         }
         else {
-            fileName = FILE_ICON;
+            fileName = FILE_ICON_NAME;
         }
     }
 
