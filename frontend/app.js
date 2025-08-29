@@ -245,9 +245,7 @@ async function loadFiles(path = '/') {
             deleteFile(`${path}${file.name}`);
         };
 
-        if (!file.isDirectory) {
-            infoSize.textContent = getSizeString(file.size);
-        }
+        infoSize.textContent = file.isDirectory ? "" : getSizeString(file.size);
         infoModified.textContent = new Date(file.modified).toLocaleString();
 
         fileList.appendChild(fragment);

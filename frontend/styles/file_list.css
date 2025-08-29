@@ -46,6 +46,7 @@
     transition: 250ms;
     width: auto;
     background-color: var(--clr-item-idle);
+    min-height: 32px;
 }
 
 .file-icon {
