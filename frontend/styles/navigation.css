@@ -1,0 +1,111 @@
+.navigation-panel {
+    --clr-main: hsl(173, 29%, 50%);
+    --clr-button: hsl(173, 29%, 60%);
+    --clr-button-highlight: hsl(173, 29%, 65%);
+    --clr-input-placeholder: hsl(0, 0%, 80%);
+    --clr-font-idle: hsl(0, 0%, 100%);
+    --clr-progress-highlight: hsl(173, 29%, 70%);
+}
+
+.navigation-panel {
+    background-color: var(--clr-main);
+}
+
+.navigation {
+    background-color: var(--clr-main);
+    display: flex;
+    padding: 5px;
+    gap: 5px;
+}
+
+.navigation input {
+    width: 250px;
+    padding: 5px;
+    background-color: transparent;
+    border-color: var(--clr-button);
+    border-style: solid;
+    color: var(--clr-font-idle);
+    transition: 250ms;
+}
+
+.navigation input:hover {
+    border-color: var(--clr-button-highlight);
+    transition: 250ms;
+}
+
+.navigation input::placeholder {
+    color: var(--clr-input-placeholder);
+}
+
+.navigation button {
+    width: 32px;
+    padding: 0;
+    background-color: var(--clr-button);
+    border-color: transparent;
+    cursor: pointer;
+    transition: 250ms;
+    display: grid;
+    align-items: center;
+    padding-left: 2px;
+}
+
+.navigation button:hover {
+    background-color: var(--clr-button-highlight);
+    transition: 250ms;
+}
+
+.navigation-io {
+    display: flex;
+    gap: 5px;
+}
+
+.upload-progress {
+    position: relative;
+    background-color: var(--clr-button);
+    height: 20px;
+    margin: 5px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--clr-progress-highlight);
+    height: 100%;
+    width: 25%;
+    transition: width 0.2s;
+}
+
+.progress-text {
+    position: absolute;
+    top: 0;
+    right: 0%;
+    margin-right: 5px;
+    color: black;
+    line-height: 21px;
+    font-size: small;
+}
+
+.progress-label {
+    position: absolute;
+    top: 0;
+    left: 0%;
+    margin-left: 5px;
+    color: black;
+    line-height: 21px;
+    font-size: small;
+}
+
+.drop-zone {
+    border: 2px dashed var(--clr-button);
+    text-align: center;
+    color: white;
+    font-size: small;
+    flex: 1;
+    max-width: 100px;
+    margin-left: auto;
+    transition: 250ms;
+}
+
+.drop-zone.dragover {
+    border-color: var(--clr-button-highlight);
+    background-color: var(--clr-button);
+}

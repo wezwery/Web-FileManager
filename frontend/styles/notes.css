@@ -1,0 +1,13 @@
+.notes {
+    --clr-main: hsl(173, 29%, 45%);
+}
+
+.notes {
+    background-color: var(--clr-main);
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    text-align: center;
+    color: white;
+    font-size: small;
+}

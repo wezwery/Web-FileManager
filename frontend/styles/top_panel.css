@@ -1,0 +1,48 @@
+.top-panel {
+    --clr-main: hsl(173, 29%, 65%);
+    --clr-font-idle: hsl(0, 0%, 0%);
+    --clr-font-highlight: hsl(0, 0%, 33%);
+}
+
+h1 {
+    user-select: none;
+}
+
+.top-panel {
+    background-color: var(--clr-main);
+    width: auto;
+    height: 35px;
+    display: flex;
+}
+
+.top-panel-left-side {
+    color: var(--clr-font-idle);
+    display: flex;
+    height: 100%;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.top-panel-right-side {
+    font-size: 12px;
+    gap: 5px;
+    margin-right: 10px;
+    color: var(--clr-font-idle);
+    display: flex;
+    margin-left: auto;
+    align-items: center;
+}
+
+.top-panel-lang {
+    cursor: pointer;
+}
+
+.top-panel-lang:hover {
+    color: var(--clr-font-highlight);
+}
+
+.top-panel-lang[current="true"] {
+    text-decoration: underline;
+    cursor: default;
+    color: var(--clr-font-highlight);
+}

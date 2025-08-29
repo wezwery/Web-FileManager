@@ -5,66 +5,128 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File Manager</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="styles/global.css" />
+    <link rel="stylesheet" href="styles/top_panel.css" />
+    <link rel="stylesheet" href="styles/navigation.css" />
+    <link rel="stylesheet" href="styles/notes.css" />
+    <link rel="stylesheet" href="styles/file_list.css" />
+    <link rel="stylesheet" href="styles/preview.css" />
 </head>
 
 <template id="file-template">
     <div class="file-item">
-        <div class="file-name"></div>
+        <img class="file-icon" src="icons/create_new_file.svg" />
+        <div class="file-name">ExampleFile.txt</div>
         <div class="file-actions">
             <div class="file-info">
-                <div class="file-size"></div>
-                <div class="file-date"></div>
+                <div class="file-size">123</div>
+                <div class="file-date">123</div>
             </div>
+            <button class="file-actions-rename">
+                <img style="width: 20px;" src="icons/rename.svg" />
+            </button>
+            <button class="file-actions-download">
+                <img style="width: 20px;" src="icons/download.svg" />
+            </button>
+            <button class="file-actions-delete">
+                <img style="width: 20px;" src="icons/delete.svg" />
+            </button>
         </div>
     </div>
 </template>
 
 <body>
-    <h1>📂 File Manager</h1>
 
-    <!-- Панель навигации -->
-    <div id="nav">
-        <input type="text" id="path-input" placeholder="Введите путь" />
-        <button onclick="goToPath()">➡️ Перейти</button>
-        <button onclick="refreshCurrentFolder()">🔄 Обновить</button>
-    </div>
-
-    <!-- Кнопки создания -->
-    <div>
-        <button onclick="createFolder()">📁 Создать каталог</button>
-        <button onclick="createFile()">📄 Создать файл</button>
-        <input type="file" id="upload-input" style="display:none" />
-        <button id="upload-btn" onclick="uploadFile()">📤 Загрузить файл</button>
-    </div>
-
-    <!-- Прогресс загрузки -->
-    <div id="upload-progress" class="upload-progress" style="display:none;">
-        <div id="progress-bar" class="progress-bar"></div>
-        <div id="progress-text" class="progress-text">0%</div>
-    </div>
-
-    <!-- Заметки каталога -->
-    <div id="notes" class="notes"></div>
-
-    <!-- Список файлов -->
-    <div id="file-list"></div>
-
-    <!-- Зона для Drag & Drop -->
-    <div id="drop-zone" class="drop-zone">
-        🖱️ Перетащи файлы сюда для загрузки
-    </div>
-
-    <!-- Просмотрщики -->
-    <div id="viewers">
-        <div id="viewer-file-name"></div>
-
-        <div id="image-viewer">
-            <img id="image-viewer-img">
+    <!-- Верхняя панель -->
+    <div class="top-panel">
+        <div class="top-panel-left-side">
+            <div>📂 File Manager</div>
         </div>
 
-        <div id="text-viewer">
-            <div id="text-viewer-txt"></div>
+        <div class="top-panel-right-side">
+            <!-- <div class="top-panel-lang" id="ru" current="true">Русский</div>
+            <div class="top-panel-lang" id="ua" current="false">Украинский</div>
+            <div class="top-panel-lang" id="en" current="false">English</div> -->
+        </div>
+    </div>
+
+    <div class="layout-body">
+        <!-- Панель навигации -->
+        <div class="navigation-panel">
+            <div class="navigation">
+                <input type="text" id="path-input" placeholder="Введите путь" />
+                <button id="navigation-goto-btn" onclick="goToPath()">
+                    <img src="icons/goto_arrow.svg" />
+                </button>
+                <button id="navigation-refresh-btn" onclick="refreshCurrentFolder()">
+                    <img src="icons/refresh.svg" />
+                </button>
+
+                <!-- Зона для Drag & Drop -->
+                <div id="drop-zone" class="drop-zone">
+                    <img src="icons/upload.svg" />
+                </div>
+
+                <!-- Кнопки создания -->
+                <div class="navigation-io">
+                    <button id="create-folder" onclick="createFolder()">
+                        <img src="icons/create_new_folder.svg" />
+                    </button>
+                    <button id="create-file" onclick="createFile()">
+                        <img src="icons/create_new_file.svg" />
+                    </button>
+                    <input type="file" id="upload-input" style="display:none" />
+                    <button id="upload-btn" onclick="uploadFile()">
+                        <img src="icons/upload_file.svg" />
+                    </button>
+                </div>
+            </div>
+
+            <!-- Прогресс загрузки -->
+            <div id="upload-progress" class="upload-progress" style="display:none;">
+                <div id="progress-bar" class="progress-bar"></div>
+                <div class="progress-label">Отправка...</div>
+                <div id="progress-text" class="progress-text">0 %</div>
+            </div>
+        </div>
+
+        <!-- Заметки каталога -->
+        <div id="notes" class="notes">Тестовая заметка</div>
+
+        <!-- Список файлов -->
+        <div id="file-list">
+            <div class="file-item">
+                <img class="file-icon" src="icons/create_new_file.svg" />
+                <div class="file-name">ExampleFile.txt</div>
+                <div class="file-actions">
+                    <div class="file-info">
+                        <div class="file-size">123</div>
+                        <div class="file-date">123</div>
+                    </div>
+                    <button class="file-actions-rename">
+                        <img style="width: 20px;" src="icons/rename.svg" />
+                    </button>
+                    <button class="file-actions-download">
+                        <img style="width: 20px;" src="icons/download.svg" />
+                    </button>
+                    <button class="file-actions-delete">
+                        <img style="width: 20px;" src="icons/delete.svg" />
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Просмотрщики -->
+        <div id="viewers">
+            <div id="viewer-file-name">FileName.txt</div>
+
+            <div id="image-viewer">
+                <img id="image-viewer-img">
+            </div>
+
+            <div id="text-viewer">
+                <div id="text-viewer-txt">TextPreview</div>
+            </div>
         </div>
     </div>
 

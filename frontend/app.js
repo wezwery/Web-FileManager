@@ -1,11 +1,11 @@
 const API_URL = `${location.protocol}//${location.hostname}:3000/api`;
 const USED_FILES = ['notes.txt'];
-const FOLDER_ICON = '📁';
-const FILE_ICON = '📄';
-const IMAGE_ICON = '🖼️';
-const AUDIO_ICON = '💽';
-const VIDEO_ICON = '📼';
-const ARCHIVE_ICON = '📦';
+const FOLDER_ICON_NAME = 'folder';
+const FILE_ICON = 'file';
+const IMAGE_ICON_NAME = 'image';
+const AUDIO_ICON_NAME = 'audio';
+const VIDEO_ICON_NAME = 'video';
+const ARCHIVE_ICON_NAME = 'archive';
 
 const DROP_ZONE = document.getElementById('drop-zone');
 
@@ -59,6 +59,32 @@ function getFileExtension(fileName) {
     return parts.length > 1 ? parts.pop().toLowerCase() : '';
 }
 
+function getIcon(file) {
+    var name = file.name;
+
+    var fileName;
+
+    if (file.isDirectory) {
+        fileName = FOLDER_ICON_NAME;
+    } else {
+        const ext = getFileExtension(name);
+        if (isImage(ext)) {
+            fileName = IMAGE_ICON_NAME;
+        } else if (isAudio(ext)) {
+            fileName = AUDIO_ICON_NAME;
+        } else if (isVideo(ext)) {
+            fileName = VIDEO_ICON_NAME;
+        } else if (isArchive(ext)) {
+            fileName = ARCHIVE_ICON_NAME;
+        }
+        else {
+            fileName = FILE_ICON;
+        }
+    }
+
+    return "icons/" + fileName + ".svg";
+}
+
 function getNameString(file) {
     var name = file.name;
 
@@ -66,22 +92,7 @@ function getNameString(file) {
         name = name.slice(0, 40) + '...' + getFileExtension(file.name);
     }
 
-    if (file.isDirectory) {
-        return `${FOLDER_ICON} ${name}`;
-    }
-
-    const ext = getFileExtension(name);
-    if (isImage(ext)) {
-        return `${IMAGE_ICON} ${name}`;
-    } else if (isAudio(ext)) {
-        return `${AUDIO_ICON} ${name}`;
-    } else if (isVideo(ext)) {
-        return `${VIDEO_ICON} ${name}`;
-    } else if (isArchive(ext)) {
-        return `${ARCHIVE_ICON} ${name}`;
-    }
-
-    return `${FILE_ICON} ${name}`;
+    return name;
 }
 
 function createTemplate(templateId) {
@@ -143,11 +154,15 @@ async function loadFiles(path = '/') {
     if (currentPath !== '/') {
         const fragment = createTemplate('file-template');
         const fileItem = fragment.querySelector('.file-item');
+        const actions = fileItem.querySelector('.file-actions');
+        const fileIcon = fileItem.querySelector('.file-icon');
         const name = fileItem.querySelector('.file-name');
         const info = fileItem.querySelector('.file-info');
 
-        name.textContent = '⬆️ ..';
+        name.textContent = '..';
+        fileIcon.src = "icons/back_arrow.svg";
         info.style.display = "none";
+        actions.style.display = "none";
 
         fileItem.onclick = () => {
             const parentPath = getParentPath(currentPath);
@@ -161,8 +176,6 @@ async function loadFiles(path = '/') {
 
     hideViewers();
 
-    DROP_ZONE.style.display = "none";
-
     await getNotes(path);
 
     files.sort((a, b) => {
@@ -174,12 +187,14 @@ async function loadFiles(path = '/') {
     files.forEach(file => {
         const fragment = createTemplate('file-template');
         const fileItem = fragment.querySelector('.file-item');
+        const fileIcon = fileItem.querySelector('.file-icon');
         const name = fileItem.querySelector('.file-name');
         const actions = fileItem.querySelector('.file-actions');
         const infoSize = fileItem.querySelector('.file-size');
         const infoModified = fileItem.querySelector('.file-date');
 
         name.textContent = getNameString(file);
+        fileIcon.src = getIcon(file);
 
         if (!file.isDirectory) {
             const ext = getFileExtension(file.name);
@@ -209,40 +224,26 @@ async function loadFiles(path = '/') {
             };
         }
 
-        const renameBtn = document.createElement('button');
+        const renameBtn = actions.querySelector('.file-actions-rename');
 
-        renameBtn.textContent = '✏️ Переименовать';
-        renameBtn.classList.add('rename');
         renameBtn.onclick = (e) => {
             e.stopPropagation();
             renameFile(file.name, `${path}${file.name}`);
         };
 
-        actions.appendChild(renameBtn);
-
-        const downloadBtn = document.createElement('button');
-
-        if (file.isDirectory) {
-            downloadBtn.textContent = '📦 Скачать ZIP';
-        } else {
-            downloadBtn.textContent = '⬇️ Скачать';
-        }
+        const downloadBtn = actions.querySelector('.file-actions-download');
 
         downloadBtn.onclick = (e) => {
             e.stopPropagation();
             downloadFile(`${currentPath}${file.name}`);
         };
-        actions.appendChild(downloadBtn);
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = '🗑️ Удалить';
-        deleteBtn.classList.add('delete');
+        const deleteBtn = actions.querySelector('.file-actions-delete');
+
         deleteBtn.onclick = (e) => {
             e.stopPropagation();
             deleteFile(`${path}${file.name}`);
         };
-
-        actions.appendChild(deleteBtn);
 
         if (!file.isDirectory) {
             infoSize.textContent = getSizeString(file.size);
@@ -251,8 +252,6 @@ async function loadFiles(path = '/') {
 
         fileList.appendChild(fragment);
     });
-
-    DROP_ZONE.style.display = "block";
 }
 
 // Получить заметки каталога
