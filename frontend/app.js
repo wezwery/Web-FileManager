@@ -9,7 +9,56 @@ const ARCHIVE_ICON_NAME = 'archive';
 
 const DROP_ZONE = document.getElementById('drop-zone');
 
+let current_lang = localStorage.getItem("current_lang") ?? "0";
+let lang_en, lang_ru, lang_ua;
+
+fetch('langs/ru.json')
+    .then(response => response.json())
+    .then(data => lang_ru = data)
+    .catch(error => console.error('Не удалось загрузить русский язык: ' + error));
+
+fetch('langs/en.json')
+    .then(response => response.json())
+    .then(data => lang_en = data)
+    .catch(error => console.error('Не удалось загрузить английский язык: ' + error));
+
+fetch('langs/ua.json')
+    .then(response => response.json())
+    .then(data => lang_ua = data)
+    .catch(error => console.error('Не удалось загрузить украинский язык: ' + error));
+
 let currentPath = '/';
+
+// Локализация
+function getTranslatedText(id) {
+    switch (current_lang) {
+        default:
+        case "0":
+            return lang_en[id];
+        case "1":
+            return lang_ru[id];
+        case "2":
+            return lang_ua[id];
+    }
+}
+function registerLangButtons() {
+    Array.from(document.getElementsByClassName('top-panel-lang')).forEach(btn => {
+        btn.onclick = () => {
+            if (current_lang === btn.id)
+                return;
+            current_lang = btn.id;
+            updateLangButtons();
+            localStorage.setItem("current_lang", btn.id);
+        }
+    });
+}
+function updateLangButtons() {
+    Array.from(document.getElementsByClassName('top-panel-lang')).forEach(b => {
+        b.setAttribute("current", current_lang === b.id ? "true" : "false");
+    });
+}
+registerLangButtons();
+updateLangButtons();
 
 // Форматы файлов
 function isImage(ext) {
@@ -300,7 +349,7 @@ async function deleteFile(filePath) {
 
 // Переименование каталога
 async function renameFile(oldName, filePath) {
-    const newName = prompt('Введите новое название:', oldName);
+    const newName = prompt(getTranslatedText("RENAME_FILE"), oldName);
     if (newName) {
         const response = await fetch(`${API_URL}/rename`, {
             method: 'POST',
@@ -319,7 +368,7 @@ async function renameFile(oldName, filePath) {
 
 // Создание каталога
 async function createFolder() {
-    const folderName = prompt('Введите название новой папки:');
+    const folderName = prompt(getTranslatedText("CREATE_NEW_FOLDER"));
     if (folderName) {
         const response = await fetch(`${API_URL}/files`, {
             method: 'POST',
@@ -338,7 +387,7 @@ async function createFolder() {
 
 // Создание файла
 async function createFile() {
-    const fileName = prompt('Введите название нового файла:');
+    const fileName = prompt(getTranslatedText("CREATE_NEW_FILE"));
     if (fileName) {
         const response = await fetch(`${API_URL}/files`, {
             method: 'POST',
@@ -377,7 +426,7 @@ async function uploadFile(file, destination) {
         xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
                 const percent = Math.round((e.loaded / e.total) * 100);
-                progressBar.style.width = percent + '%';
+                progressBar.style.width = percent + ' %';
                 progressText.textContent = `${percent}% (${file.name})`;
             }
         });
@@ -388,7 +437,7 @@ async function uploadFile(file, destination) {
                 progressText.textContent = `✅ Загружено: ${file.name}`;
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
-                }, 800);
+                }, 1000);
                 resolve();
             } else {
                 alert(`Ошибка при загрузке ${file.name}: ${xhr.responseText}`);
