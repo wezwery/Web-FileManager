@@ -1,5 +1,9 @@
 {
     "CREATE_NEW_FILE": "Enter the name of the new file:",
     "CREATE_NEW_FOLDER": "Enter the name of the new folder:",
-    "RENAME_FILE": "Enter a new name:"
+    "RENAME_FILE": "Enter a new name:",
+    "SIZE_BYTES": "B",
+    "SIZE_KILOBYTES": "KB",
+    "SIZE_MEGABYTES": "MB",
+    "SIZE_GIGABYTES": "GB"
 }

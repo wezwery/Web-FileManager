@@ -97,10 +97,10 @@ function getParentPath(path) {
 }
 
 function getSizeString(size) {
-    if (size < 1024) return `${size} Б`;
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} КБ`;
-    if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} МБ`;
-    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} ГБ`;
+    if (size < 1024) return `${size} ${getTranslatedText("SIZE_BYTES")}`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} ${getTranslatedText("SIZE_KILOBYTES")}`;
+    if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} ${getTranslatedText("SIZE_MEGABYTES")}`;
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} ${getTranslatedText("SIZE_GIGABYTES")}`;
 }
 
 function getFileExtension(fileName) {

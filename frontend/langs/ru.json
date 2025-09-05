@@ -1,5 +1,9 @@
 {
     "CREATE_NEW_FILE": "Введите название нового файла:",
     "CREATE_NEW_FOLDER": "Введите название новой папки:",
-    "RENAME_FILE": "Введите новое название:"
+    "RENAME_FILE": "Введите новое название:",
+    "SIZE_BYTES": "Б",
+    "SIZE_KILOBYTES": "КБ",
+    "SIZE_MEGABYTES": "МБ",
+    "SIZE_GIGABYTES": "ГБ"
 }
