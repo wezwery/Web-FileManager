@@ -1,29 +1,31 @@
 # Web-FileManager
 
-## Запуск
+English | [Русский](README_RU.md) | [Українська](README_UA.md)
 
-1. Установить `python` и `nodejs`.
-2. Запустить `run.sh`.
+## Launch
 
-## Информация
+1. Install `python` and `nodejs`.
+2. Run `run.sh`.
 
-- Все файлы хранятся в `data/` каталоге.
+## Information
 
-## Заметки
+- All files are stored in the `data/` directory.
 
-- У каждого каталога могут быть заметки.
+## Notes
 
-1. Создайте `notes.txt` в нужном каталоге.
-2. Напишите текст в `notes.txt`.
-3. Заметки появятся в том же каталоге что и `notes.txt`.
+- Each directory can have notes.
 
-## Предпросмотр
+1. Create `notes.txt` in the desired directory.
+2. Write text in `notes.txt`.
+3. Notes will appear in the same directory as `notes.txt`.
 
-- Нажмите на файлы что-бы просмотреть их.
-- Поддерживаемые файлы:
+## Preview
+
+- Click on files to preview them.
+- Supported files:
   - `txt`, `json`, `md`
   - `jpg`, `jpeg`, `png`, `gif`, `bmp`, `webp`
 
-## Скриншот
+## Screenshot
 
 ![Web-FileManager](Screenshot.png)
