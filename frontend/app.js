@@ -294,6 +294,13 @@ async function loadFiles(path = '/') {
             deleteFile(`${path}${file.name}`);
         };
 
+        const directLinkBtn = actions.querySelector('.file-actions-copy-direct-link');
+
+        directLinkBtn.onclick = (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(getLinkToDownloadFile(`${currentPath}${file.name}`));
+        };
+
         infoSize.textContent = file.isDirectory ? "" : getSizeString(file.size);
         infoModified.textContent = new Date(file.modified).toLocaleString();
 
@@ -320,9 +327,14 @@ async function getNotes(directory) {
         document.getElementById('notes').style.display = 'none';
 }
 
+// Получить ссылку на скачивание файла/каталога
+function getLinkToDownloadFile(filePath) {
+    return `${API_URL}/download?path=${encodeURIComponent(filePath)}`;
+}
+
 // Скачивание файла
 function downloadFile(filePath) {
-    const url = `${API_URL}/download?path=${encodeURIComponent(filePath)}`;
+    const url = getLinkToDownloadFile(filePath);
     const link = document.createElement('a');
     link.href = url;
     link.download = filePath.split('/').pop(); // имя файла
